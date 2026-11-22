@@ -1,0 +1,212 @@
+/* Ember Duel: felt table, gold trim, cards that lift on hover and snap when played. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: #0a2e18;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #f4f1e6;
+}
+
+#table {
+  position: relative;
+  width: 100vw; height: 100vh; min-height: 760px;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 42%, #1a6b3c 0%, #14532d 55%, #0b3d20 100%);
+  border: 10px solid #5d3a1a;
+  outline: 3px solid #f2c94c;
+  outline-offset: -13px;
+  overflow: hidden;
+}
+
+#status {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ---- top bar ---- */
+#topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 22px 4px;
+  font-weight: 700; letter-spacing: 0.08em;
+}
+.brand { font-size: 22px; color: #f2c94c; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+#turnLabel { font-size: 18px; background: rgba(0,0,0,.35); padding: 4px 16px; border-radius: 20px; }
+#winsLabel { font-size: 16px; color: #f2c94c; }
+
+/* ---- duelist zones ---- */
+.zone { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 2px 16px; }
+.duelist {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(0,0,0,.35); border: 1px solid rgba(242,201,76,.35);
+  border-radius: 12px; padding: 8px 16px; min-width: 560px;
+}
+.avatar {
+  font-size: 34px; width: 52px; height: 52px; line-height: 52px; text-align: center;
+  border-radius: 50%; background: #2a2118; border: 2px solid #f2c94c;
+}
+.player-avatar { border-color: #4f9fd8; }
+.vitals { flex: 1; }
+.name { font-size: 17px; font-weight: 800; letter-spacing: .06em; }
+.tag { font-size: 11px; color: #aab3c0; letter-spacing: .12em; margin-left: 6px; }
+.lifebar {
+  position: relative; height: 22px; margin-top: 5px;
+  background: #3a1114; border-radius: 11px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,.25);
+}
+.lifefill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #e5534b, #f2857d);
+  transition: width .45s ease;
+}
+.lifetext {
+  position: absolute; inset: 0; text-align: center; line-height: 22px;
+  font-size: 14px; font-weight: 700; text-shadow: 0 1px 2px #000;
+}
+.shield { min-height: 20px; font-size: 15px; font-weight: 700; color: #7fb3e8; margin-top: 2px; }
+.shield.on { text-shadow: 0 0 8px rgba(127,179,232,.7); }
+.deckpile { text-align: center; font-size: 13px; color: #aab3c0; }
+.mini-back {
+  display: block; width: 30px; height: 42px; margin: 0 auto 2px;
+  font-size: 15px; line-height: 42px; text-align: center;
+  border-radius: 4px; border: 1px solid #f2c94c;
+  background: repeating-linear-gradient(45deg, #7a2e2e 0 6px, #8f3535 6px 12px);
+}
+.deck-count { display: block; font-size: 17px; font-weight: 800; color: #f4f1e6; }
+
+/* ---- hands ---- */
+.hand {
+  display: flex; justify-content: center; align-items: flex-end;
+  min-height: 158px; padding: 4px 0 2px;
+}
+.hand .card { margin: 0 -8px; }
+
+/* ---- cards ---- */
+.card {
+  position: relative;
+  width: 104px; height: 148px; flex: 0 0 auto;
+  border-radius: 10px; border: 2px solid var(--suit-dark, #333);
+  background: linear-gradient(160deg, #fffdf6 0%, #f3ead2 100%);
+  color: #222; cursor: pointer; padding: 0;
+  font-family: inherit; text-align: center;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,.45);
+}
+.card.playable:hover, .card.playable:focus-visible {
+  transform: rotate(var(--tilt, 0deg)) translateY(-16px) scale(1.06);
+  box-shadow: 0 12px 22px rgba(0,0,0,.55), 0 0 0 3px var(--suit, #f2c94c);
+  z-index: 5; outline: none;
+}
+.card.spent { filter: saturate(.35) brightness(.75); cursor: not-allowed; }
+.card .cost {
+  position: absolute; top: 5px; left: 5px;
+  width: 26px; height: 26px; line-height: 26px; border-radius: 50%;
+  background: #f2c94c; color: #3a2c00; font-weight: 800; font-size: 15px;
+  border: 2px solid #8a6d1d;
+}
+.card .symbol { display: block; font-size: 34px; margin-top: 30px; }
+.card .card-name { display: block; font-size: 13px; font-weight: 800; margin-top: 2px; color: var(--suit-dark, #333); }
+.card .power {
+  display: block; font-size: 34px; font-weight: 900; line-height: 1.05;
+  color: var(--suit, #333);
+}
+.card .effect { display: block; font-size: 10.5px; color: #555; padding: 0 6px; line-height: 1.25; }
+.card .key-hint {
+  position: absolute; bottom: 4px; right: 6px;
+  font-size: 10px; color: #999; font-weight: 700;
+}
+.card.back {
+  width: 84px; height: 122px; cursor: default;
+  background:
+    repeating-linear-gradient(45deg, #7a2e2e 0 10px, #8f3535 10px 20px);
+  border-color: #f2c94c;
+}
+.card.back .back-mark { font-size: 30px; line-height: 122px; filter: grayscale(.4); }
+
+/* ---- middle row: log, energy, end turn ---- */
+#midRow {
+  display: flex; align-items: center; gap: 18px;
+  padding: 6px 22px; min-height: 64px;
+}
+#log {
+  flex: 1; font-size: 14px; line-height: 1.45; color: #d7dce4;
+  background: rgba(0,0,0,.3); border-radius: 8px; padding: 6px 12px; min-height: 52px;
+}
+.log-line:last-child { color: #f2c94c; font-weight: 600; }
+#energyBox { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; }
+#energyBox .pip { color: #5a5344; font-size: 20px; }
+#energyBox .pip.on { color: #f2c94c; text-shadow: 0 0 10px rgba(242,201,76,.8); }
+#energyBox .energy-text { margin-left: 6px; color: #f4f1e6; }
+#endTurn {
+  font: inherit; font-size: 17px; font-weight: 800; letter-spacing: .04em;
+  color: #1c2430; background: #f2c94c; border: none; border-radius: 10px;
+  padding: 12px 22px; cursor: pointer; box-shadow: 0 3px 0 #8a6d1d;
+  transition: transform .12s ease, filter .12s ease;
+}
+#endTurn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+#endTurn:disabled { filter: grayscale(.8) brightness(.6); cursor: default; box-shadow: none; }
+#endTurn.your-turn { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 3px 0 #8a6d1d, 0 0 0 0 rgba(242,201,76,.5); }
+  50% { box-shadow: 0 3px 0 #8a6d1d, 0 0 0 9px rgba(242,201,76,0); }
+}
+#table.ai-turn #playerHand .card { filter: brightness(.85); }
+
+/* ---- banner and floating numbers ---- */
+#banner {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%) scale(.9);
+  font-size: 34px; font-weight: 900; letter-spacing: .05em; color: #f2c94c;
+  text-shadow: 0 3px 0 rgba(0,0,0,.5); opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease; white-space: nowrap; z-index: 20;
+}
+#banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#floatLayer { position: absolute; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+.float-text {
+  position: absolute; transform: translateX(-50%);
+  font-size: 30px; font-weight: 900; text-shadow: 0 2px 0 rgba(0,0,0,.6);
+  animation: floatUp 1s ease-out forwards;
+}
+.float-text.damage { color: #ff6b5e; }
+.float-text.heal { color: #7be495; }
+.float-text.shield { color: #7fb3e8; }
+.float-text.blocked { color: #aab3c0; font-size: 20px; }
+@keyframes floatUp {
+  0% { opacity: 0; margin-top: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; margin-top: -64px; }
+}
+
+/* ---- overlays: title, victory, defeat ---- */
+.overlay {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(5, 20, 12, .72);
+}
+.overlay.hidden { display: none; }
+.panel {
+  width: 620px; max-width: 92vw; text-align: center;
+  background: #1c2430; border: 2px solid #f2c94c; border-radius: 16px;
+  padding: 30px 36px 26px; box-shadow: 0 18px 50px rgba(0,0,0,.6);
+}
+.panel h1 { margin: 0 0 6px; font-size: 46px; letter-spacing: .04em; }
+.panel.win h1 { color: #f2c94c; }
+.panel.lose h1 { color: #e5534b; }
+.tagline { margin: 0 0 16px; font-size: 17px; color: #d7dce4; }
+.howto {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
+  text-align: left; font-size: 15px; margin: 0 auto 14px; max-width: 520px;
+}
+.suit-dot { font-size: 18px; margin-right: 6px; }
+.rules { font-size: 14.5px; line-height: 1.55; color: #aab3c0; margin: 0 0 18px; }
+.panel button {
+  font: inherit; font-size: 19px; font-weight: 800;
+  color: #1c2430; background: #f2c94c; border: none; border-radius: 10px;
+  padding: 13px 30px; cursor: pointer; box-shadow: 0 3px 0 #8a6d1d;
+}
+.panel button:hover { filter: brightness(1.08); }
+.wins-line { margin: 14px 0 0; font-size: 14px; color: #aab3c0; }
+.stat-line { font-size: 16px; line-height: 1.7; color: #d7dce4; }
+#winStats, #loseStats { margin-bottom: 16px; }
